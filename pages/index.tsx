@@ -4,25 +4,36 @@ import {
   Card,
   CardBody,
   CardFooter,
-  CardHeader,
-  FormControl,
-  FormLabel,
   Heading,
-  Input,
   SimpleGrid,
   Stack,
   Text,
-  Textarea,
+  useDisclosure,
 } from "@chakra-ui/react";
 import axios from "axios";
 import Head from "next/head";
-import { useQuery, useMutation } from "react-query";
+import { useQuery } from "react-query";
 import { Posts } from "../types/posts";
 import { useState } from "react";
 import AddForm from "../components/AddForm";
+import ModalDetails from "../components/ModalDetails";
+import ModalEdit from "../components/ModalEdit";
 
 export default function Home() {
   const [posts, setPosts] = useState<Posts[]>([]);
+  const [selectedPost, setSelectedPost] = useState<Posts | undefined>(
+    undefined
+  );
+  const {
+    isOpen: isDetailsOpen,
+    onOpen: onDetailOpen,
+    onClose: onDetailClose,
+  } = useDisclosure();
+  const {
+    isOpen: isEditOpen,
+    onOpen: onEditOpen,
+    onClose: onEditClose,
+  } = useDisclosure();
 
   async function fetchPosts() {
     const { data } = await axios("https://jsonplaceholder.typicode.com/posts");
@@ -33,6 +44,21 @@ export default function Home() {
     queryKey: ["getPost"],
     queryFn: fetchPosts,
   });
+
+  function handleShowDetails(id: number) {
+    onDetailOpen();
+    const findPost: undefined | Posts = posts.find((post) => post.id == id);
+    setSelectedPost(findPost);
+  }
+
+  function handleShowEdit(id: number) {
+    onEditOpen();
+  }
+
+  function handleDelete(id: number) {
+    const deletePost = posts.filter((post) => post.id !== id);
+    setPosts(deletePost);
+  }
 
   return (
     <>
@@ -52,27 +78,50 @@ export default function Home() {
             spacing={4}
             templateColumns="repeat(auto-fill, minmax(260px, 1fr))"
           >
-            {!isLoading && posts.map((post: Posts) => (
-              <Card key={post.id}>
-                <CardBody>
-                  <Text>{post.title}</Text>
-                </CardBody>
-                <CardFooter gap={2}>
-                  <Button colorScheme="telegram" size="sm">
-                    Details
-                  </Button>
-                  <Button colorScheme="facebook" size="sm" variant="outline">
-                    Edit
-                  </Button>
-                  <Button colorScheme="orange" size="sm" variant="outline">
-                    Delete
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+            {!isLoading &&
+              posts.map((post: Posts) => (
+                <Card key={post.id}>
+                  <CardBody>
+                    <Text>{post.title}</Text>
+                  </CardBody>
+                  <CardFooter gap={2}>
+                    <Button
+                      colorScheme="telegram"
+                      size="sm"
+                      onClick={() => handleShowDetails(post.id)}
+                    >
+                      Details
+                    </Button>
+                    <Button
+                      colorScheme="facebook"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleShowEdit(post.id)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      colorScheme="orange"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDelete(post.id)}
+                    >
+                      Delete
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
           </SimpleGrid>
         </Stack>
       </Box>
+
+      <ModalDetails
+        isOpen={isDetailsOpen}
+        onClose={onDetailClose}
+        selectedPost={selectedPost}
+      />
+
+      <ModalEdit isOpen={isEditOpen} onClose={onEditClose} />
     </>
   );
 }
