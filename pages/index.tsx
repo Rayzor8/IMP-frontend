@@ -52,6 +52,8 @@ export default function Home() {
   }
 
   function handleShowEdit(id: number) {
+    const findPost = posts.find((post) => post.id === id);
+    setSelectedPost(findPost);
     onEditOpen();
   }
 
@@ -68,7 +70,13 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Box>
-        <AddForm posts={posts} setPosts={setPosts} />
+        <AddForm
+          posts={posts}
+          setPosts={setPosts}
+          type={selectedPost}
+          selectedPost={selectedPost}
+          setSelectedPost={setSelectedPost}
+        />
 
         <Stack>
           <Heading as="h1" size="md" textAlign="center">
@@ -121,7 +129,14 @@ export default function Home() {
         selectedPost={selectedPost}
       />
 
-      <ModalEdit isOpen={isEditOpen} onClose={onEditClose} />
+      <ModalEdit
+        isOpen={isEditOpen}
+        onClose={onEditClose}
+        selectedPost={selectedPost}
+        setSelectedPost={setSelectedPost}
+        posts={posts}
+        setPosts={setPosts}
+      />
     </>
   );
 }

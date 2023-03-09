@@ -1,6 +1,7 @@
 import {
   Button,
   FormControl,
+  FormErrorMessage,
   FormLabel,
   Input,
   Textarea,
@@ -17,22 +18,54 @@ type FormValues = {
 type AddFormProps = {
   posts: Posts[];
   setPosts: Dispatch<SetStateAction<Posts[]>>;
+  type: Posts | undefined;
+  selectedPost: undefined | Posts;
+  setSelectedPost:Dispatch<SetStateAction<Posts | undefined>>
+  onClose?: () => void;
 };
 
-const AddForm = ({ posts, setPosts }: AddFormProps) => {
+const AddForm = ({
+  posts,
+  setPosts,
+  type,
+  selectedPost,
+  setSelectedPost,
+  onClose,
+}: AddFormProps) => {
   const {
     handleSubmit,
     register,
     resetField,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>();
+  } = useForm<FormValues>({
+    mode: "onChange",
+    defaultValues: {
+      title: selectedPost ? selectedPost.title : "",
+      body: selectedPost ? selectedPost.body : "",
+    },
+  });
+  const { ref } = register("title");
 
   const onSubmit = (values: FormValues) => {
-    console.log(values);
-    setPosts([{ id: Date.now(), ...values }, ...posts]);
+    if (!selectedPost) {
+      setPosts([{ id: Date.now(), ...values }, ...posts]);
+    } else {
+      setPosts((prevPosts) =>
+        prevPosts.map((post) => {
+          if (post.id === selectedPost.id) {
+            return (post = { id: Date.now(), ...values });
+          } else {
+            return post;
+          }
+        })
+      );
+      onClose && onClose();
+      setSelectedPost(undefined)
+    }
     resetField("title");
     resetField("body");
   };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <FormControl
@@ -48,20 +81,18 @@ const AddForm = ({ posts, setPosts }: AddFormProps) => {
           type="text"
           placeholder="input title here.."
           {...register("title", {
-            required: "This is required",
-            minLength: { value: 4, message: "Minimum length should be 4" },
+            required: true,
           })}
         />
         <FormLabel>Body</FormLabel>
         <Textarea
           placeholder="Input body here.."
           {...register("body", {
-            required: "This is required",
-            minLength: { value: 4, message: "Minimum length should be 4" },
+            required: true,
           })}
         />
         <Button colorScheme="teal" type="submit">
-          Create Post
+          {type ? "Edit Post" : "Create Post"}
         </Button>
       </FormControl>
     </form>

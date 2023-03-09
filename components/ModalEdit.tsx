@@ -8,31 +8,47 @@ import {
   ModalCloseButton,
   Button,
 } from "@chakra-ui/react";
+import { Dispatch, SetStateAction } from "react";
+import { Posts } from "../types/posts";
+import AddForm from "./AddForm";
 
 type ModalEditProps = {
   isOpen: boolean;
   onClose: () => void;
+  selectedPost: undefined | Posts;
+  setSelectedPost: Dispatch<SetStateAction<Posts | undefined>>;
+  posts: Posts[];
+  setPosts: Dispatch<SetStateAction<Posts[]>>;
 };
-const ModalEdit = ({ isOpen, onClose }: ModalEditProps) => {
+const ModalEdit = ({
+  isOpen,
+  onClose,
+  selectedPost,
+  setSelectedPost,
+  posts,
+  setPosts,
+}: ModalEditProps) => {
+  const handleClose = () => {
+    onClose();
+    setSelectedPost(undefined);
+  };
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={handleClose} size="xl">
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Modal Edit</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis itaque
-            odit accusantium, consequuntur culpa alias? Odit reiciendis eum
-            eveniet minus repudiandae ipsa cupiditate!
-          </p>
+          <AddForm
+            posts={posts}
+            setPosts={setPosts}
+            type={selectedPost}
+            selectedPost={selectedPost}
+            setSelectedPost={setSelectedPost}
+            onClose={onClose}
+          />
         </ModalBody>
-
-        <ModalFooter>
-          <Button colorScheme="blue" mr={3} onClick={onClose}>
-            Close
-          </Button>
-        </ModalFooter>
       </ModalContent>
     </Modal>
   );
